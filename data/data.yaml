@@ -1,0 +1,16 @@
+# PPE Detection Dataset Configuration
+# Used by YOLOv8 for training
+# This is a template — update paths after downloading the dataset.
+
+train: data/images/train
+val: data/images/val
+test: data/images/test
+
+# Number of classes
+nc: 3
+
+# Class names
+names:
+  0: hardhat
+  1: safety_vest
+  2: mask

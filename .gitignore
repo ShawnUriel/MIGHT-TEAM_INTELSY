@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Data (large files — download via script)
+data/images/
+data/labels/
+data/*.zip
+data/*.tar.gz
+data/raw/
+
+# Model weights (large files)
+models/*.pt
+models/*.onnx
+models/*.engine
+runs/
+
+# Results (regenerable)
+results/
+
+# Logs
+*.log
+wandb/
