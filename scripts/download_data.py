@@ -64,20 +64,26 @@ def download_from_roboflow(output_dir: str) -> None:
     # ---------------------------------------------------------------
     # CONFIGURE YOUR DATASET HERE
     # ---------------------------------------------------------------
-    # Option 1: PPE Detection dataset from Roboflow Universe
-    # Browse: https://universe.roboflow.com/search?q=ppe+detection
-    # Example workspace/project/version — update with your chosen dataset:
+    # PPE dataset for this project (Roboflow Universe)
+    # Link: https://universe.roboflow.com/roboflow-universe-projects/personal-protective-equipment-combined-model/dataset/8
     workspace = "roboflow-universe-projects"
-    project_name = "construction-site-safety"
-    version_number = 30
+    project_name = "personal-protective-equipment-combined-model"
+    version_number = 8
 
     print(f"[INFO] Downloading dataset: {workspace}/{project_name} v{version_number}")
     project = rf.workspace(workspace).project(project_name)
     version = project.version(version_number)
 
     # Download in YOLOv8 format
-    dataset = version.download("yolov8", location=output_dir)
-    print(f"[INFO] Dataset downloaded to: {output_dir}")
+    dataset = version.download("yolov8", location=output_dir, overwrite=True)
+    loc = getattr(dataset, "location", output_dir)
+    print(f"[INFO] Dataset downloaded to: {loc}")
+    # Debug: list top-level contents to confirm files are present
+    try:
+        entries = list(Path(loc).iterdir())
+        print(f"[INFO] Top-level entries: {[e.name for e in entries]}")
+    except Exception as exc:  # pragma: no cover
+        print(f"[WARN] Could not list entries at {loc}: {exc}")
     print(f"[INFO] Dataset details:")
     print(f"       Classes: {dataset.classes if hasattr(dataset, 'classes') else 'see data.yaml'}")
     return
