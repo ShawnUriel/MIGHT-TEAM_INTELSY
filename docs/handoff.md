@@ -15,6 +15,21 @@
 - Option A (pip): `pip install -r requirements.txt`
 - Option B (conda): `conda env create -f environment.yml && conda activate ppe-detection`
 
+## Download the dataset (Roboflow option)
+- Set API key (required):
+  - Command Prompt (Windows): `set ROBOFLOW_API_KEY=your_key_here`
+  - PowerShell (Windows): `$env:ROBOFLOW_API_KEY="your_key_here"`
+  - Get key from Roboflow account settings.
+- Run downloader:
+  - `python scripts/download_data.py --source roboflow --output data`
+- This pulls the PPE v8 dataset in YOLOv8 format into `data/`.
+
+## If you do not have an API key (or received a shared zip)
+- Unzip the dataset into `data/` so it has:
+  - `data/train/images`, `data/train/labels`
+  - `data/val/images`, `data/val/labels`
+  - `data/test/images`, `data/test/labels`
+
 ## Expected dataset layout
 ```
 data/
@@ -27,6 +42,16 @@ data/
   test/labels/*.txt
 ```
 If you place the dataset elsewhere, update the paths inside data/data.yaml.
+
+## Check/align data.yaml
+- `data/data.yaml` already exists in this repo.
+- It expects split paths under `data/` (for example `../train/images` from inside `data/`).
+- If your dataset is elsewhere, update `train`, `val`, and `test` paths in `data/data.yaml`.
+
+## Before training
+- Ensure labels exist for every split (`train`, `val`, `test`) in YOLO `.txt` format.
+- Optional sanity check:
+  - `python tmp_stats.py`
 
 ## Training commands (Ultralytics YOLOv8)
 - Full run (GPU recommended):

@@ -1,8 +1,8 @@
 # Model Card — PPE Detection System (Draft)
 
 ## Model Details
-- Architecture: YOLOv8 (variant: TBD; likely n/s)
-- Version / tag: TBD
+- Architecture: YOLOv8n (Ultralytics)
+- Version / tag: Baseline run `exp_yolov8n_15h` (2026-03-27)
 - Authors / contact: MIGHT TEAM (update with names)
 - License: MIT (code); dataset license: Roboflow PPE Combined v8 terms (TBD confirm)
 
@@ -19,14 +19,18 @@
 - Preprocessing: resize 640x640 (Roboflow export); augmentation TBD; normalization per YOLO defaults.
 
 ## Training
-- Hyperparameters: epochs ___, batch ___, img 640, optimizer ___, LR schedule ___
-- Hardware: ___
-- Checkpoints: runs/detect/___ ; best.pt saved to models/best.pt
+- Hyperparameters (baseline): epochs 10, batch 8, img 512, device CPU, workers 0, fraction 0.1, optimizer AdamW (auto), seed default.
+- Hardware: Windows laptop CPU (no CUDA available in runtime used).
+- Checkpoints: `runs/detect/runs/detect/exp_yolov8n_15h/weights/{best,last}.pt`
 
 ## Evaluation
-- Metrics: mAP@0.5 ___; mAP@0.5:0.95 ___; Precision ___; Recall ___ (pending training)
+- Baseline metrics (epoch 10): mAP@0.5 0.06086; mAP@0.5:0.95 0.03326; Precision 0.27795; Recall 0.09322.
+- Ablation metrics:
+	- `exp_ablation_fraction20`: mAP@0.5 0.07560; mAP@0.5:0.95 0.04150; Precision 0.27776; Recall 0.09918.
+	- `exp_ablation_img640`: mAP@0.5 0.06909; mAP@0.5:0.95 0.03777; Precision 0.92431; Recall 0.09178.
+- Best current configuration by mAP is `exp_ablation_fraction20`.
 - Test set description: 4,423 images; labels present.
-- Failure modes: anticipated issues on minority classes and small objects; confirm post-training.
+- Failure modes: low recall on current baseline; expected under-detection of minority PPE classes and small/occluded objects.
 
 ## Ethical Considerations
 - Privacy: no identity capture; PPE-only detection.
@@ -41,7 +45,7 @@
 
 ## Deployment
 - Intended runtime: Python + Ultralytics; supports CPU/GPU.
-- Interfaces: scripts/detect.py CLI; planned API wrapper: ___
+- Interfaces: scripts/detect.py CLI (now includes NLP summary/alert text output); planned API wrapper: ___
 - Monitoring: track mAP drift via periodic eval; log false positives/negatives.
 
 ## Caveats & Recommendations

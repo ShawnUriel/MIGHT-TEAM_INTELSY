@@ -16,6 +16,12 @@ import sys
 import time
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from scripts.nlp_component_stub import generate_alert_text, summarize_detection_counts
+
 
 def main():
     parser = argparse.ArgumentParser(description="YOLOv8 PPE Detection Inference")
@@ -122,6 +128,27 @@ def main():
         for cls_name, count in sorted(class_counts.items()):
             print(f"    {cls_name}: {count}")
         print("=" * 60)
+
+        nlp_summary = summarize_detection_counts(class_counts)
+        missing_counts = {
+            "missing_hardhat": class_counts.get("NO-Hardhat", 0),
+            "missing_vest": class_counts.get("NO-Safety Vest", 0),
+            "missing_mask": class_counts.get("NO-Mask", 0),
+        }
+        nlp_alert = generate_alert_text(missing_counts)
+
+        print("\nNLP SUMMARY")
+        print("=" * 60)
+        print(nlp_summary)
+        print(nlp_alert)
+        print("=" * 60)
+
+        out_dir = Path(args.output)
+        out_dir.mkdir(parents=True, exist_ok=True)
+        (out_dir / "nlp_summary.txt").write_text(
+            nlp_summary + "\n" + nlp_alert + "\n",
+            encoding="utf-8",
+        )
 
         if args.save:
             print(f"\n[INFO] Results saved to: {args.output}/")
