@@ -43,6 +43,10 @@ models/*.onnx
 models/*.engine
 runs/
 
+# Keep the final demo checkpoint in git so graders can run webcam inference
+# without retraining.
+!models/best.pt
+
 # Results (regenerable)
 results/
 

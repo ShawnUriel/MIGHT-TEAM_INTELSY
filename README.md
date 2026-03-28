@@ -64,6 +64,19 @@ Full table: [docs/ablation_results.md](docs/ablation_results.md)
 
 ## Quick Start
 
+### No-Training Webcam Demo (For Grading)
+
+This repository includes a ready checkpoint at `models/best.pt`, so training is
+not required for the live demo.
+
+```bash
+# from repo root (Windows)
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+.venv\Scripts\python.exe detect.py --model best.pt --source 0 --conf 0.25 --img 960 --show --output results/detections_live --hide-classes Fall-Detected
+```
+
+If webcam index `0` is busy/not found, retry with `--source 1`.
+
 ### 1. Clone the Repository
 
 ```bash
