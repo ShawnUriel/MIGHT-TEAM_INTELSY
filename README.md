@@ -35,12 +35,14 @@ Full table: [docs/ablation_results.md](docs/ablation_results.md)
 ## Project Structure
 
 ```
-├── data/                  # Dataset folder (gitignored; use download script)
-│   ├── images/
-│   └── labels/
+├── data/                  # Dataset folder (train/valid/test splits)
+│   ├── train/
+│   ├── valid/
+│   └── test/
 ├── docs/                  # Proposal and documentation
 │   └── proposal.md
 ├── models/                # Saved model weights (gitignored)
+├── detect.py              # Root launcher wrapper for scripts/detect.py
 ├── notebooks/             # Jupyter notebooks for EDA & experiments
 │   └── eda.ipynb
 ├── scripts/               # Utility scripts
@@ -82,6 +84,11 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
+Windows fallback when `pip` is not on PATH:
+```bash
+venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
 **Option B — Conda:**
 ```bash
 conda env create -f environment.yml
@@ -109,11 +116,27 @@ python scripts/train.py --epochs 50 --batch 16 --img 640
 python scripts/detect.py --source path/to/image.jpg
 
 # On a folder of images
-python scripts/detect.py --source data/images/test/
+python scripts/detect.py --source data/test/images/
 
 # Real-time webcam (stretch goal)
 python scripts/detect.py --source 0
 ```
+
+Windows deadline-safe webcam command (run from repo root):
+```bash
+.venv\Scripts\python.exe detect.py --model best.pt --source 0 --conf 0.25 --img 960 --show --output results/detections_live --hide-classes Fall-Detected
+```
+
+Notes:
+- `detect.py` at repo root calls `scripts/detect.py`.
+- `--model best.pt` auto-resolves to `models/best.pt`.
+- If webcam index `0` fails, try `--source 1`.
+
+## Where Trained Outputs Go
+
+- Full run artifacts: `runs/detect/<run_name>/`
+- Best checkpoint from a run: `runs/detect/<run_name>/weights/best.pt`
+- Promoted checkpoint used for inference: `models/best.pt`
 
 ## Evaluation Metrics
 

@@ -43,14 +43,29 @@ def main():
                         help="Device: 'cpu', '0', etc. (default: auto)")
     parser.add_argument("--output", type=str, default="results/detections",
                         help="Output directory for saved results")
+    parser.add_argument("--hide-classes", type=str, default="",
+                        help="Comma-separated class names to suppress (e.g., 'Fall-Detected,Person')")
     args = parser.parse_args()
 
-    # Validate model file exists
-    if not os.path.exists(args.model):
+    # Resolve model path robustly so common shortcuts work (e.g., --model best.pt)
+    model_candidates = [Path(args.model)]
+    model_arg_path = Path(args.model)
+    if not model_arg_path.is_absolute():
+        model_candidates.append(ROOT / model_arg_path)
+        # If only a filename is provided, also try models/<filename>
+        if model_arg_path.name == args.model:
+            model_candidates.append(ROOT / "models" / model_arg_path)
+
+    resolved_model = next((p for p in model_candidates if p.exists()), None)
+    if resolved_model is None:
         print(f"ERROR: Model weights not found at '{args.model}'")
+        print("Checked paths:")
+        for candidate in model_candidates:
+            print(f"  - {candidate}")
         print("Train a model first with: python scripts/train.py")
         print("Or specify a different model: --model path/to/model.pt")
         sys.exit(1)
+    args.model = str(resolved_model)
 
     try:
         from ultralytics import YOLO
@@ -68,11 +83,27 @@ def main():
     print(f"  IoU:         {args.iou}")
     print(f"  Img Size:    {args.img}")
     print(f"  Device:      {args.device or 'auto'}")
+    if args.hide_classes:
+        print(f"  Hide:        {args.hide_classes}")
     print("=" * 60)
 
     # Load model
     print(f"\n[INFO] Loading model: {args.model}")
     model = YOLO(args.model)
+
+    hidden_names = {
+        name.strip() for name in args.hide_classes.split(",") if name.strip()
+    }
+    allowed_class_ids = None
+    if hidden_names:
+        # Resolve class IDs to keep. Anything hidden is excluded from inference.
+        name_to_id = {v: k for k, v in model.names.items()}
+        unknown = sorted(n for n in hidden_names if n not in name_to_id)
+        if unknown:
+            print(f"[WARN] Unknown class names in --hide-classes: {', '.join(unknown)}")
+        allowed_class_ids = [
+            cid for cname, cid in name_to_id.items() if cname not in hidden_names
+        ]
 
     # Determine if source is webcam
     is_webcam = args.source == "0" or args.source.startswith("rtsp")
@@ -80,6 +111,10 @@ def main():
     if is_webcam:
         print("[INFO] Starting real-time webcam detection...")
         print("[INFO] Press 'q' to quit the webcam window.")
+        if args.conf >= 0.35:
+            print("[WARN] High confidence can miss hats/no-hats in webcam mode. Try --conf 0.25 or 0.20.")
+        if args.img < 800:
+            print("[TIP] Small head PPE objects are easier to detect with higher resolution (try --img 960).")
         args.show = True
 
     # Run inference
@@ -93,6 +128,7 @@ def main():
         save=args.save,
         show=args.show,
         name=args.output,
+        classes=allowed_class_ids,
         stream=is_webcam,
     )
 
