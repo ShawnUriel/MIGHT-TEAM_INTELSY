@@ -41,6 +41,7 @@ data/raw/
 models/*.pt
 models/*.onnx
 models/*.engine
+!models/team_webcam_best.pt
 runs/
 
 # Results (regenerable)
