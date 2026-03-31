@@ -188,14 +188,15 @@ DATA_DIR=C:/rf RUN_NAME=exp_custom bash run.sh
 
 ## Key Artifacts
 
+- Release notes (v1.0): [docs/release_notes_v1.0.md](docs/release_notes_v1.0.md)
 - Final report draft: [docs/final_report_draft.md](docs/final_report_draft.md)
 - Slides draft: [docs/slides_draft.md](docs/slides_draft.md)
 - Ethics statement: [docs/ethics_statement.md](docs/ethics_statement.md)
 - Model card: [docs/model_card.md](docs/model_card.md)
 - Requirements coverage: [docs/requirements_coverage.md](docs/requirements_coverage.md)
 - Final checklist: [docs/final_submission_checklist.md](docs/final_submission_checklist.md)
-- RL outputs: [results/rl](results/rl)
-- NLP sample output: [results/detections_nlp_sample/nlp_summary.txt](results/detections_nlp_sample/nlp_summary.txt)
+- RL artifacts: [scripts/rl_experiment.py](scripts/rl_experiment.py), [scripts/rl_stub.py](scripts/rl_stub.py)
+- NLP component artifact: [scripts/nlp_component_stub.py](scripts/nlp_component_stub.py)
 
 ## Ethics & Privacy
 

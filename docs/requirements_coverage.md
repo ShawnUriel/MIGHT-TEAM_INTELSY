@@ -8,15 +8,15 @@
 |---|---|---|---|
 | Core deep learning model | Done | YOLOv8 training and detection scripts in [scripts/train.py](../scripts/train.py) and [scripts/detect.py](../scripts/detect.py) | Add final metrics table in final report |
 | CNN component | Done | YOLOv8 detector (CNN-based backbone/head) | Add ablation on model size or image size |
-| NLP component | In Progress | [scripts/nlp_component_stub.py](../scripts/nlp_component_stub.py) integrated into [scripts/detect.py](../scripts/detect.py); sample output in [results/detections_nlp_sample/nlp_summary.txt](../results/detections_nlp_sample/nlp_summary.txt) | Add batch-level qualitative evaluation examples |
-| RL component | Done | [scripts/rl_stub.py](../scripts/rl_stub.py), [scripts/rl_experiment.py](../scripts/rl_experiment.py), outputs in [results/rl](../results/rl), mean reward 2.7614 | Improve environment realism for stretch goal |
+| NLP component | In Progress | [scripts/nlp_component_stub.py](../scripts/nlp_component_stub.py) integrated into [scripts/detect.py](../scripts/detect.py); runtime summary generation implemented in detect pipeline | Add batch-level qualitative evaluation examples |
+| RL component | Done | [scripts/rl_stub.py](../scripts/rl_stub.py), [scripts/rl_experiment.py](../scripts/rl_experiment.py) | Improve environment realism for stretch goal |
 
 ## Pipeline and Evaluation
 | Requirement | Status | Evidence | Gap to Close |
 |---|---|---|---|
 | Dataset governance | In Progress | [data/README.dataset.txt](../data/README.dataset.txt), [data/README.roboflow.txt](../data/README.roboflow.txt) | Add consent and representativeness notes in final report |
 | Train/val/test split, no leakage | Done | [data/data.yaml](../data/data.yaml), sanity checks via [tmp_stats.py](../tmp_stats.py) | Add leakage prevention note in report |
-| Baselines: non-DL + DL | Done | DL baseline run `exp_yolov8n_15h`; non-DL baseline in [results/baselines/non_dl_majority_box_metrics.json](../results/baselines/non_dl_majority_box_metrics.json) | Add brief interpretation in final report |
+| Baselines: non-DL + DL | Done | DL baseline run `exp_yolov8n_15h`; non-DL baseline script in [scripts/non_dl_baseline.py](../scripts/non_dl_baseline.py) and reported metrics in [docs/checkpoint-week2.md](checkpoint-week2.md) | Add brief interpretation in final report |
 | Ablations (>=2) | Done | [docs/ablation_results.md](ablation_results.md) with baseline + two completed ablations | Add brief interpretation paragraph in final report |
 | Error/slice analysis | In Progress | Confusion matrices and PR curves in baseline run outputs | Add class-slice failure examples with commentary |
 
