@@ -53,6 +53,10 @@ def main():
                         help="Max detections per frame (default: 300)")
     parser.add_argument("--webcam-fast", action=argparse.BooleanOptionalAction, default=True,
                         help="Apply FPS-oriented webcam settings (default: True)")
+    parser.add_argument("--webcam-terminal-log", action=argparse.BooleanOptionalAction, default=True,
+                        help="Print live webcam detection/no-detection summary in terminal (default: True)")
+    parser.add_argument("--webcam-log-every", type=int, default=1,
+                        help="Print webcam terminal summary every N processed frames (default: 1)")
     args = parser.parse_args()
 
     # Resolve model path robustly so common shortcuts work (e.g., --model best.pt)
@@ -82,6 +86,9 @@ def main():
         print("Run: pip install ultralytics")
         sys.exit(1)
 
+    # Determine if source is webcam
+    is_webcam = args.source == "0" or args.source.startswith("rtsp")
+
     print("=" * 60)
     print("PPE Detection — YOLOv8 Inference")
     print("=" * 60)
@@ -94,6 +101,9 @@ def main():
     print(f"  Save:        {args.save}")
     print(f"  Vid Stride:  {args.vid_stride}")
     print(f"  Max Det:     {args.max_det}")
+    if is_webcam:
+        print(f"  Live Log:    {args.webcam_terminal_log}")
+        print(f"  Log Every:   {max(1, args.webcam_log_every)} frame(s)")
     if args.keep_classes:
         print(f"  Keep:        {args.keep_classes}")
     if args.hide_classes:
@@ -103,9 +113,6 @@ def main():
     # Load model
     print(f"\n[INFO] Loading model: {args.model}")
     model = YOLO(args.model)
-
-    # Determine if source is webcam
-    is_webcam = args.source == "0" or args.source.startswith("rtsp")
 
     if is_webcam:
         print("[INFO] Starting real-time webcam detection...")
@@ -132,6 +139,10 @@ def main():
             if not args.keep_classes:
                 args.keep_classes = "Hardhat,Mask,Safety Vest,NO-Hardhat,NO-Mask,NO-Safety Vest"
                 print("[INFO] Webcam fast mode: limiting classes to core PPE/no-PPE set.")
+
+        if args.webcam_log_every < 1:
+            print("[INFO] Webcam terminal log interval must be >= 1. Using 1.")
+            args.webcam_log_every = 1
 
     keep_names = {
         name.strip() for name in args.keep_classes.split(",") if name.strip()
@@ -202,7 +213,24 @@ def main():
         frame_count = 0
         for result in results:
             frame_count += 1
-            # Results are displayed via show=True
+            if not args.webcam_terminal_log:
+                continue
+            if frame_count % args.webcam_log_every != 0:
+                continue
+
+            frame_counts = {}
+            for box in result.boxes:
+                cls_id = int(box.cls[0])
+                cls_name = result.names[cls_id]
+                frame_counts[cls_name] = frame_counts.get(cls_name, 0) + 1
+
+            if frame_counts:
+                details = ", ".join(
+                    f"{name}:{count}" for name, count in sorted(frame_counts.items())
+                )
+                print(f"[LIVE] Frame {frame_count}: {details}")
+            else:
+                print(f"[LIVE] Frame {frame_count}: no detections")
     else:
         # Process batch results
         elapsed = time.time() - start_time
