@@ -44,6 +44,20 @@ models/*.engine
 !models/team_webcam_best.pt
 runs/
 
+# Keep the final demo checkpoint in git so graders can run webcam inference
+# without retraining.
+!models/best.pt
+
+# Keep one resumable Colab run folder in git (weights only) so training
+# can continue from last.pt.
+!runs/
+!runs/detect/
+runs/detect/*
+!runs/detect/colab_ppe_v2/
+!runs/detect/colab_ppe_v2/weights/
+!runs/detect/colab_ppe_v2/weights/best.pt
+!runs/detect/colab_ppe_v2/weights/last.pt
+
 # Results (regenerable)
 results/
 

@@ -35,12 +35,14 @@ Full table: [docs/ablation_results.md](docs/ablation_results.md)
 ## Project Structure
 
 ```
-├── data/                  # Dataset folder (gitignored; use download script)
-│   ├── images/
-│   └── labels/
+├── data/                  # Dataset folder (train/valid/test splits)
+│   ├── train/
+│   ├── valid/
+│   └── test/
 ├── docs/                  # Proposal and documentation
 │   └── proposal.md
 ├── models/                # Saved model weights (gitignored)
+├── detect.py              # Root launcher wrapper for scripts/detect.py
 ├── notebooks/             # Jupyter notebooks for EDA & experiments
 │   └── eda.ipynb
 ├── scripts/               # Utility scripts
@@ -62,6 +64,19 @@ Full table: [docs/ablation_results.md](docs/ablation_results.md)
 
 ## Quick Start
 
+### No-Training Webcam Demo (For Grading)
+
+This repository includes a ready checkpoint at `models/best.pt`, so training is
+not required for the live demo.
+
+```bash
+# from repo root (Windows)
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+.venv\Scripts\python.exe detect.py --model best.pt --source 0 --conf 0.25 --img 960 --show --output results/detections_live --hide-classes Fall-Detected
+```
+
+If webcam index `0` is busy/not found, retry with `--source 1`.
+
 ### 1. Clone the Repository
 
 ```bash
@@ -80,6 +95,11 @@ venv\Scripts\activate
 source venv/bin/activate
 
 pip install -r requirements.txt
+```
+
+Windows fallback when `pip` is not on PATH:
+```bash
+venv\Scripts\python.exe -m pip install -r requirements.txt
 ```
 
 **Option B — Conda:**
@@ -109,11 +129,27 @@ python scripts/train.py --epochs 50 --batch 16 --img 640
 python scripts/detect.py --source path/to/image.jpg
 
 # On a folder of images
-python scripts/detect.py --source data/images/test/
+python scripts/detect.py --source data/test/images/
 
 # Real-time webcam (stretch goal)
 python scripts/detect.py --source 0
 ```
+
+Windows deadline-safe webcam command (run from repo root):
+```bash
+.venv\Scripts\python.exe detect.py --model best.pt --source 0 --conf 0.25 --img 960 --show --output results/detections_live --hide-classes Fall-Detected
+```
+
+Notes:
+- `detect.py` at repo root calls `scripts/detect.py`.
+- `--model best.pt` auto-resolves to `models/best.pt`.
+- If webcam index `0` fails, try `--source 1`.
+
+## Where Trained Outputs Go
+
+- Full run artifacts: `runs/detect/<run_name>/`
+- Best checkpoint from a run: `runs/detect/<run_name>/weights/best.pt`
+- Promoted checkpoint used for inference: `models/best.pt`
 
 ## Evaluation Metrics
 
@@ -152,14 +188,15 @@ DATA_DIR=C:/rf RUN_NAME=exp_custom bash run.sh
 
 ## Key Artifacts
 
+- Release notes (v1.0): [docs/release_notes_v1.0.md](docs/release_notes_v1.0.md)
 - Final report draft: [docs/final_report_draft.md](docs/final_report_draft.md)
 - Slides draft: [docs/slides_draft.md](docs/slides_draft.md)
 - Ethics statement: [docs/ethics_statement.md](docs/ethics_statement.md)
 - Model card: [docs/model_card.md](docs/model_card.md)
 - Requirements coverage: [docs/requirements_coverage.md](docs/requirements_coverage.md)
 - Final checklist: [docs/final_submission_checklist.md](docs/final_submission_checklist.md)
-- RL outputs: [results/rl](results/rl)
-- NLP sample output: [results/detections_nlp_sample/nlp_summary.txt](results/detections_nlp_sample/nlp_summary.txt)
+- RL artifacts: [scripts/rl_experiment.py](scripts/rl_experiment.py), [scripts/rl_stub.py](scripts/rl_stub.py)
+- NLP component artifact: [scripts/nlp_component_stub.py](scripts/nlp_component_stub.py)
 
 ## Ethics & Privacy
 

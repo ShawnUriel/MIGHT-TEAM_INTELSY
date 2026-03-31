@@ -1,0 +1,2 @@
+Detected: 3 Hardhat.
+All required PPE detected.

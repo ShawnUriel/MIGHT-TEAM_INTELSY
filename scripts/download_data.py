@@ -15,6 +15,7 @@ import shutil
 from pathlib import Path
 
 
+
 def download_from_roboflow(output_dir: str) -> None:
     """
     Download PPE dataset from Roboflow using the Roboflow Python SDK.
@@ -23,8 +24,9 @@ def download_from_roboflow(output_dir: str) -> None:
     https://roboflow.com/
     
     Set your API key as an environment variable:
-        export ROBOFLOW_API_KEY=your_api_key_here   (Linux/Mac)
-        set ROBOFLOW_API_KEY=your_api_key_here       (Windows)
+        export ROBOFLOW_API_KEY=your_api_key_here       (Linux/Mac)
+        set ROBOFLOW_API_KEY=your_api_key_here          (Windows CMD)
+        $env:ROBOFLOW_API_KEY="your_api_key_here"       (Windows PowerShell)
     """
     try:
         from roboflow import Roboflow
@@ -44,8 +46,10 @@ def download_from_roboflow(output_dir: str) -> None:
         print("  1. Sign up at https://roboflow.com/ (free)")
         print("  2. Go to Settings > API Key")
         print("  3. Set the environment variable:")
-        print("     Windows:  set ROBOFLOW_API_KEY=your_key_here")
-        print("     Linux:    export ROBOFLOW_API_KEY=your_key_here")
+        print("     Windows CMD:        set ROBOFLOW_API_KEY=your_key_here")
+        print("     Windows PowerShell: $env:ROBOFLOW_API_KEY=\"your_key_here\"")
+        print("     Linux/Mac:          export ROBOFLOW_API_KEY=your_key_here")
+        print("     Colab (Python):     os.environ['ROBOFLOW_API_KEY']='your_key_here'")
         print("  4. Re-run this script.")
         print()
         print("Alternatively, manually download a PPE dataset and place it in:")

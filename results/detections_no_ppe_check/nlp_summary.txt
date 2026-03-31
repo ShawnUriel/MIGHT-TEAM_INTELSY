@@ -1,0 +1,2 @@
+Detected: 3 NO-Hardhat.
+Alert: missing 3 hardhat.

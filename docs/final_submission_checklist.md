@@ -22,8 +22,8 @@
 
 ## Release and Defense Packaging
 - [ ] Tag release as v1.0
-- [ ] Add release notes summarizing final metrics and artifacts
-- [ ] Verify all docs links resolve in README and docs files
+- [x] Add release notes summarizing final metrics and artifacts
+- [x] Verify all docs links resolve in README and docs files
 - [ ] Prepare 8-10 minute presentation flow
 - [ ] Prepare Q&A backup notes (trade-offs, failures, ethics)
 
