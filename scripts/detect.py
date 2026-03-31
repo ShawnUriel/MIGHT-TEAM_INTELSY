@@ -35,16 +35,24 @@ def main():
                         help="IoU threshold for NMS (default: 0.45)")
     parser.add_argument("--img", type=int, default=640,
                         help="Input image size (default: 640)")
-    parser.add_argument("--save", action="store_true", default=True,
-                        help="Save detection results (default: True)")
-    parser.add_argument("--show", action="store_true", default=False,
+    parser.add_argument("--save", action=argparse.BooleanOptionalAction, default=False,
+                        help="Save detection results (default: False)")
+    parser.add_argument("--show", action=argparse.BooleanOptionalAction, default=False,
                         help="Display results in a window")
     parser.add_argument("--device", type=str, default="",
                         help="Device: 'cpu', '0', etc. (default: auto)")
     parser.add_argument("--output", type=str, default="results/detections",
                         help="Output directory for saved results")
+    parser.add_argument("--keep-classes", type=str, default="",
+                        help="Comma-separated class names to keep (e.g., 'Hardhat,Safety Vest,NO-Hardhat')")
     parser.add_argument("--hide-classes", type=str, default="",
                         help="Comma-separated class names to suppress (e.g., 'Fall-Detected,Person')")
+    parser.add_argument("--vid-stride", type=int, default=1,
+                        help="Process every Nth frame for video/webcam (default: 1)")
+    parser.add_argument("--max-det", type=int, default=300,
+                        help="Max detections per frame (default: 300)")
+    parser.add_argument("--webcam-fast", action=argparse.BooleanOptionalAction, default=True,
+                        help="Apply FPS-oriented webcam settings (default: True)")
     args = parser.parse_args()
 
     # Resolve model path robustly so common shortcuts work (e.g., --model best.pt)
@@ -83,27 +91,18 @@ def main():
     print(f"  IoU:         {args.iou}")
     print(f"  Img Size:    {args.img}")
     print(f"  Device:      {args.device or 'auto'}")
+    print(f"  Save:        {args.save}")
+    print(f"  Vid Stride:  {args.vid_stride}")
+    print(f"  Max Det:     {args.max_det}")
+    if args.keep_classes:
+        print(f"  Keep:        {args.keep_classes}")
     if args.hide_classes:
         print(f"  Hide:        {args.hide_classes}")
-    print("=" * 60)
+    print("=" * 60) 
 
     # Load model
     print(f"\n[INFO] Loading model: {args.model}")
     model = YOLO(args.model)
-
-    hidden_names = {
-        name.strip() for name in args.hide_classes.split(",") if name.strip()
-    }
-    allowed_class_ids = None
-    if hidden_names:
-        # Resolve class IDs to keep. Anything hidden is excluded from inference.
-        name_to_id = {v: k for k, v in model.names.items()}
-        unknown = sorted(n for n in hidden_names if n not in name_to_id)
-        if unknown:
-            print(f"[WARN] Unknown class names in --hide-classes: {', '.join(unknown)}")
-        allowed_class_ids = [
-            cid for cname, cid in name_to_id.items() if cname not in hidden_names
-        ]
 
     # Determine if source is webcam
     is_webcam = args.source == "0" or args.source.startswith("rtsp")
@@ -111,11 +110,73 @@ def main():
     if is_webcam:
         print("[INFO] Starting real-time webcam detection...")
         print("[INFO] Press 'q' to quit the webcam window.")
+        # Webcam checks are expected to be interactive.
         if args.conf >= 0.35:
             print("[WARN] High confidence can miss hats/no-hats in webcam mode. Try --conf 0.25 or 0.20.")
-        if args.img < 800:
-            print("[TIP] Small head PPE objects are easier to detect with higher resolution (try --img 960).")
         args.show = True
+
+        if args.webcam_fast:
+            # Avoid frame-by-frame disk I/O in webcam mode.
+            if args.save:
+                print("[INFO] Webcam fast mode: disabling --save to improve FPS.")
+                args.save = False
+            if args.vid_stride < 2:
+                args.vid_stride = 2
+                print("[INFO] Webcam fast mode: using --vid-stride 2.")
+            if args.max_det > 100:
+                args.max_det = 100
+                print("[INFO] Webcam fast mode: capping --max-det to 100.")
+            if args.img > 640:
+                args.img = 640
+                print("[INFO] Webcam fast mode: capping --img to 640.")
+            if not args.keep_classes:
+                args.keep_classes = "Hardhat,Mask,Safety Vest,NO-Hardhat,NO-Mask,NO-Safety Vest"
+                print("[INFO] Webcam fast mode: limiting classes to core PPE/no-PPE set.")
+
+    keep_names = {
+        name.strip() for name in args.keep_classes.split(",") if name.strip()
+    }
+    hidden_names = {
+        name.strip() for name in args.hide_classes.split(",") if name.strip()
+    }
+
+    name_to_id = {str(v).lower(): k for k, v in model.names.items()}
+    id_to_name = {k: str(v) for k, v in model.names.items()}
+    allowed_class_ids = None
+
+    if keep_names:
+        unknown_keep = sorted(
+            name for name in keep_names if name.lower() not in name_to_id
+        )
+        if unknown_keep:
+            print(f"[WARN] Unknown class names in --keep-classes: {', '.join(unknown_keep)}")
+        keep_ids = [
+            name_to_id[name.lower()] for name in keep_names if name.lower() in name_to_id
+        ]
+        allowed_class_ids = sorted(set(keep_ids))
+
+    if hidden_names:
+        unknown_hide = sorted(
+            name for name in hidden_names if name.lower() not in name_to_id
+        )
+        if unknown_hide:
+            print(f"[WARN] Unknown class names in --hide-classes: {', '.join(unknown_hide)}")
+
+        hide_ids = {
+            name_to_id[name.lower()] for name in hidden_names if name.lower() in name_to_id
+        }
+
+        if allowed_class_ids is None:
+            allowed_class_ids = [cid for cid in sorted(id_to_name) if cid not in hide_ids]
+        else:
+            allowed_class_ids = [cid for cid in allowed_class_ids if cid not in hide_ids]
+
+    if allowed_class_ids is not None:
+        if not allowed_class_ids:
+            print("ERROR: class filtering removed all classes. Check --keep-classes/--hide-classes.")
+            sys.exit(1)
+        selected = ", ".join(id_to_name[cid] for cid in allowed_class_ids)
+        print(f"[INFO] Detecting classes: {selected}")
 
     # Run inference
     start_time = time.time()
@@ -129,7 +190,11 @@ def main():
         show=args.show,
         name=args.output,
         classes=allowed_class_ids,
+        vid_stride=max(1, args.vid_stride),
+        max_det=args.max_det,
         stream=is_webcam,
+        stream_buffer=False,
+        verbose=not is_webcam,
     )
 
     if is_webcam:
